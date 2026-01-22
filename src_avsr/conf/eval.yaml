@@ -1,0 +1,50 @@
+common:
+  user_dir: ???
+  # fp16: true
+
+generation:
+  beam: 5 
+  
+  temperature: 1.0
+  max_len_a: 1.0
+  max_len_b: 0
+  lenpen: 1.0
+  lm_weight: 0
+  
+  repetition_penalty: 1.2
+  no_repeat_ngram_size: 3
+  min_length: 1
+  max_new_tokens: 100
+
+task:
+  _name: mob-av-emr_training
+  whisper_path: ???
+  data: ???
+  label_dir: ???
+
+common_eval:
+  results_path: ???
+  path: ???
+
+dataset:
+  max_tokens: 1000
+  gen_subset: test
+  num_workers: 2
+
+override:
+  data: ???
+  label_dir: ???
+  noise_wav: null
+  noise_prob: 0.0
+  noise_snr: 0
+  modalities: ???
+  llm_path: ???
+
+  input_video: null
+  input_audio: null
+
+model:
+  whisper_path: ???
+  w2v_path: ???
+  llm_path: ${override.llm_path}
+  ctc_vocab_path: ???

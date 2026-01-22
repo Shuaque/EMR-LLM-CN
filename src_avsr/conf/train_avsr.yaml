@@ -1,0 +1,113 @@
+# @package _global_
+
+common:
+  fp16: true
+  log_format: tqdm
+  log_interval: 100
+  no_progress_bar: false
+  tensorboard_logdir: tb
+  seed: 42
+  user_dir: "${env:ROOT}/src_avsr"
+  empty_cache_freq: 1000
+
+checkpoint:
+  save_interval: 1
+  keep_interval_updates: 1
+  save_interval_updates: 500
+  best_checkpoint_metric: cer
+  maximize_best_checkpoint_metric: False
+  no_epoch_checkpoints: false
+  patience: 5
+  finetune_from_model: "${env:ROOT}/exp/22_170953_qwen2.5_3b_ctc_ce/checkpoints/checkpoint_best.pt"
+  
+distributed_training:
+  ddp_backend: legacy_ddp
+  find_unused_parameters: true
+  distributed_world_size: 4
+
+task:
+  _name: mob-av-emr_training
+  is_s2s: true
+  data: "${env:ROOT}/data"
+  label_dir: "${env:ROOT}/data"
+  labels: ["ltr"]
+  
+  whisper_path: "${env:ROOT}/pretrained/Whisper/whisper-large"
+  llm_path: "${env:ROOT}/pretrained/LLM/Qwen2.5-3B-Instruct"
+
+  fine_tuning: true
+  stack_order_audio: 4
+  normalize: true
+  modalities: ["video", "audio"]
+  image_aug: true
+  pad_audio: true
+  max_sample_size: 650
+  min_sample_size: 4
+  random_crop: false
+
+  noise_prob: 0.1
+  noise_snr: 0.0
+  noise_wav: "${env:ROOT}/data/babble_noise.wav"
+  log_noise_debug: false
+
+dataset:
+  num_workers: 4
+  max_tokens: 900
+  train_subset: train
+  valid_subset: valid
+  validate_interval: 1
+  grouped_shuffling: true
+  update_epoch_batch_itr: true
+
+criterion:
+  _name: decoder_only_language_modeling_loss
+  ctc_weight: 0.5
+  ctc_zero_infinity: true
+
+optimization:
+  max_epoch: 5
+  max_update: 10000
+  lr: [2e-5]
+  update_freq: [1]
+  clip_norm: 1.0
+  skip_remainder_batch: false
+
+optimizer:
+  _name: adam
+  adam_betas: (0.9, 0.98)
+  adam_eps: 1e-08
+
+lr_scheduler:
+  _name: cosine
+  warmup_updates: 200
+  min_lr: 1e-7
+
+model:
+  _name: mob-av-emr
+  w2v_path: "${env:ROOT}/pretrained/Avhubert/base_vox_iter5.pt"
+  llm_path: "${env:ROOT}/pretrained/LLM/Qwen2.5-3B-Instruct"
+  whisper_path: "${env:ROOT}/pretrained/Whisper/whisper-large"
+  
+  ctc_vocab_path: "${env:ROOT}/data/global_ctc_vocab_3bi.pt"
+  
+  llama_embed_dim: 2560
+  whisper_embed_dim: 1280
+  avhubert_embed_dim: 768
+  
+  target_modules: q_proj.k_proj.v_proj.o_proj
+  lora_rank: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  use_gradient_checkpointing: true
+  
+  modality_fuse: concat
+  fuse_heads: 8
+  fuse_layers: 1
+  align_dropout: 0.1
+
+hydra:
+  run:
+    dir: "${env:ROOT}/exp/${now:%Y%m}/run/train_avsr_${now:%d}_${now:%H%M%S}"
+  sweep:
+    dir: "${env:ROOT}/exp/${now:%Y%m}/sweep/${now:%d%H%M%S}"
+    subdir: "run"

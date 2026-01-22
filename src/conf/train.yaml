@@ -1,0 +1,103 @@
+common:
+  user_dir: "${env:ROOT}/src"
+  bf16: true
+  log_format: tqdm
+  log_interval: 10
+  tensorboard_logdir: tb
+  seed: 42
+
+dataset:
+  # **FIX**: Reduce workers to prevent IO bottlenecks/deadlocks on startup
+  num_workers: 4
+  
+  # **FIX**: Increase batch size if VRAM allows (e.g., 32 on A100/V100) to reduce fetch overhead
+  batch_size: 16 
+  required_batch_size_multiple: 1
+  train_subset: train
+  valid_subset: dev
+  
+  # **FIX**: Skip invalid size checks to speed up loading if your data is noisy
+  skip_invalid_size_inputs_valid_test: true
+
+optimization:
+  max_epoch: 20
+  lr: [4e-5] 
+  update_freq: [2] 
+  clip_norm: 0.1 
+
+model:
+  _name: mie_task_llm_model
+  llm_path: "${env:ROOT}/pretrained/LLM/Qwen2.5-3B-Instruct"
+  max_source_len: 512
+  gradient_checkpointing: true
+  use_lora: true
+  lora_r: 32
+  lora_alpha: 64
+  num_attention_heads: 8
+  dropout: 0.1
+  logic_dropout: 0.4
+  window_size: 64
+  local_focus_alpha: 0.8 
+  text_logit_scale: 8.0
+  logic_salvage_lambda: 0.3
+  topic_k_quotas: [80, 50, 20, 30]
+  train_soft_penalty: -7.0
+
+distributed_training:
+  distributed_world_size: 4
+  distributed_backend: nccl
+  ddp_backend: c10d
+  find_unused_parameters: false
+
+checkpoint:
+  save_interval: 1
+  save_interval_updates: 500
+  best_checkpoint_metric: overall_f1
+  maximize_best_checkpoint_metric: true
+  patience: 5
+  no_epoch_checkpoints: true
+
+task:
+  _name: medical_hmr_task
+  data: "${env:ROOT}/data"
+  ontology: "${env:ROOT}/data/ontology.json"
+  matrix_path: "${env:ROOT}/data/correlation_matrix.pt"
+  llm_path: "${env:ROOT}/pretrained/LLM/Qwen2.5-3B-Instruct"
+  max_source_len: 512
+  macro_weight: 0.3
+  asl_weight: 0.5
+  topo_weight: 0.2
+  topic_tau: 25.0 
+  save_snapshots: true
+  snapshot_interval: 1
+
+criterion:
+  _name: medical_hmr_criterion
+  macro_weight: 0.3
+  asl_weight: 0.5
+  topo_weight: 0.2
+  intra_sim_alpha: 0.2 
+  topic_tau: 25.0
+  gamma_neg: 2.0 
+  gamma_pos: 1.0
+  asl_clip: 0.05
+  sub_threshold: 0.5
+
+optimizer:
+  _name: adam
+  lr: [4e-5]
+  adam_betas: "(0.9, 0.98)"
+  weight_decay: 0.05
+
+lr_scheduler:
+  _name: reduce_lr_on_plateau
+  lr_shrink: 0.5
+  lr_threshold: 0.001
+  warmup_updates: 500
+
+hydra:
+  run:
+    dir: "${env:ROOT}/exp/${now:%Y%m}/run/train_emr_${now:%d}_${now:%H%M%S}"
+  sweep:
+    dir: "${env:ROOT}/exp/${now:%Y%m}/sweep/${now:%d%H%M%S}"
+    subdir: "run"
