@@ -84,6 +84,9 @@ cd ..
 运行脚本 `../../EMR-LLM-CN/inference.py` 以进行**单样本评估**。脚本内置了评估示例，支持在 **纯文本**、**音视频** 和 **仅音频** 等多种模态的 EMR 数据上进行评估。多模态数据示例可在 `../../EMR-LLM-CN/data/examples` 中找到，其中提供了可用于评估的音频或视频样本。
 
 ```bash
+
+# 启动脚本 bash /../../EMR-LLM-CN/scripts/inference.sh
+
 export ROOT=../../EMR-LLM-CN
 export TOKENIZERS_PARALLELISM=false
 export SRC_PTH="$ROOT/src"

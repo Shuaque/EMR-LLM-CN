@@ -80,6 +80,8 @@ Some results are slightly better than in the paper due to hyper-parameter optimi
 ## Inference
 Run the script `../../EMR-LLM-CN/inference.py` to perform **single-sample evaluation**. Built-in evaluation examples are provided, supporting EMR data across **text-only**, **audio-video**, and **audio-only** modalities. Example multimodal data can be found in `../../EMR-LLM-CN/data/examples`, where audio or video samples are provided for evaluation.
 ```bash
+# run this scipts:  bash /../../EMR-LLM-CN/scripts/inference.sh
+
 export ROOT=../../EMR-LLM-CN
 export TOKENIZERS_PARALLELISM=false
 export SRC_PTH="$ROOT/src"
