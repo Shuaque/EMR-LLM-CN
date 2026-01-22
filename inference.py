@@ -88,30 +88,30 @@ multimedia_dialogues = [
     {
         "modality": "audio_video",
         "dialogue": [
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_0.wav",
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_1_win_1.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_1.wav",
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_2.wav",
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_1_win_3.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_3.wav",
+            "患者:/../../EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_0.wav",
+            "医生:/../../EMR-LLM-CN/data/examples/video96/mie_dia_1_win_1.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_1.wav",
+            "患者:/../../EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_2.wav",
+            "医生:/../../EMR-LLM-CN/data/examples/video96/mie_dia_1_win_3.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_3.wav",
         ]
     },
     {
         "modality": "audio_video",
         "dialogue": [
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_6_win_2.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_2.wav",
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_6_win_3.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_3.wav",
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_4.wav",
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_6_win_5.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_5.wav",
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_6_win_6.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_6.wav",
+            "患者:/../../EMR-LLM-CN/data/examples/video96/mie_dia_6_win_2.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_2.wav",
+            "医生:/../../EMR-LLM-CN/data/examples/video96/mie_dia_6_win_3.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_3.wav",
+            "患者:/../../EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_4.wav",
+            "医生:/../../EMR-LLM-CN/data/examples/video96/mie_dia_6_win_5.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_5.wav",
+            "患者:/../../EMR-LLM-CN/data/examples/video96/mie_dia_6_win_6.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_6_win_6.wav",
         ]
     },
 
         {
         "modality": "audio_video",
         "dialogue": [
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_11_win_4.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_4.wav",
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_11_win_5.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_5.wav",
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_6.wav",
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_11_win_7.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_7.wav",
+            "患者:/../../EMR-LLM-CN/data/examples/video96/mie_dia_11_win_4.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_4.wav",
+            "医生:/../../EMR-LLM-CN/data/examples/video96/mie_dia_11_win_5.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_5.wav",
+            "患者:/../../EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_6.wav",
+            "医生:/../../EMR-LLM-CN/data/examples/video96/mie_dia_11_win_7.mp4, /../../EMR-LLM-CN/data/examples/audio16k/mie_dia_11_win_7.wav",
         ]
     }
 ]
@@ -317,7 +317,7 @@ class AVSRPredictor:
         utils.import_user_module(argparse.Namespace(user_dir=user_dir))
         
         # 1. Video Preprocessor
-        mean_face_path = os.path.join(os.environ.get("ROOT", "/workspace/shuaque/EMR-LLM-CN"), 
+        mean_face_path = os.path.join(os.environ.get("ROOT", "/../../EMR-LLM-CN"), 
                                       "data/preparation/detectors/retinaface/20words_mean_face.npy")
         self.video_preprocessor = VideoPreprocessor(device=device, mean_face_path=mean_face_path)
 

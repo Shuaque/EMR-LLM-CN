@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export ROOT="/workspace/shuaque/EMR-LLM-CN"
+export ROOT="/../../EMR-LLM-CN"
 export SRC_EMR="$ROOT/src"
 export SRC_AVSR="$ROOT/src_avsr"
 
@@ -13,7 +13,7 @@ ONTOLOGY="$ROOT/data/ontology.json"
 
 # --- AVSR Model (Audio/Video Transcription) ---
 AVSR_CHECKPOINT="$ROOT/pretrained/avsr_checkpoint_best.pt"
-AVSR_DATA_DIR="/workspace/shuaque/CMDD-MIE-EMR-AV" 
+AVSR_DATA_DIR="/../../CMDD-MIE-EMR-AV" 
 
 # --- AVSR Auxiliary Files (Optional but Recommended) ---
 # If your model uses CTC or specific pre-trained encoders, define them here.
