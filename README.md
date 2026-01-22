@@ -4,7 +4,7 @@ EMR-LLM-CN is a **Qwen2.5-3B-Instruct**-based LLM that can process **multimodal 
 
 The code is protected by copyright. Please **credit the source** when using it, and **do not engage in infringement**.
 
-![Overview](/workspace/shuaque/EMR-LLM-CN/data/examples/overview.png)
+![Overview](data/examples/overview-fig.png)
 
 
 ## Environment Setup
