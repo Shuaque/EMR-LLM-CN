@@ -9,7 +9,7 @@ Whisper_PATH=$ROOT/pretrained/Whisper/whisper-large
 Avhubert_PATH=$ROOT/pretrained/Avhubert/base_vox_iter5.pt
 CTC_VOCAB=$ROOT/data/global_ctc_vocab_3bi.pt
 
-DATA=/workspace/shuaque/CMDD-MIE-EMR-AV
+DATA=/../../CMDD-MIE-EMR-AV
 
 # Fine-tuned model path (Checkpoint)
 MODEL_PATH=$ROOT/pretrained/avsr_checkpoint_best.pt

@@ -1,6 +1,10 @@
 # EMR-LLM-CN
-An audio-visual LLM
 
+EMR-LLM-CN is a **Qwen2.5-3B-Instruct**-based LLM that can process **multimodal dialogue inputs** and summarize them into **structured, label-based electronic medical records (EMR)**, supporting both **audio-visual speech recognition** and **EMR label generation**.
+
+The code is protected by copyright. Please **credit the source** when using it, and **do not engage in infringement**.
+
+![Overview](/workspace/shuaque/EMR-LLM-CN/data/examples/overview.png)
 
 
 ## Environment Setup
@@ -92,14 +96,49 @@ CUDA_VISIBLE_DEVICES=0 python $ROOT/inference.py \
 
 Example results can be found in `../../EMR-LLM-CN/inference.log`.
 ```bash
-raw_dialogue = [
-      "患者:心脏的血管堵塞有什么最新治疗方法吗",
-      "医生:您好,要看在什么部位,一般可以下支架解决堵塞问题!CT未看到堵塞,有肌桥,若症状较重考虑搭桥手术!"
-    ]
+| [Pipeline] Processing Dialogue Inputs...
 
 ============================================================
-| Inference Results
+| Final Context for EMR Model:
 ============================================================
+患者:没有呕吐,就是吐了点奶,
+医生:宝宝今天吐奶几次
+患者:一次
+医生:血丝多吗
+医生:呕吐物中有粘液吗?
+============================================================
+
+| [EMR] Running entity extraction...
+
+[Top-10 Probabilities]
+Rank  1 | Prob: 0.9934 | 症状:呕吐
+Rank  2 | Prob: 0.7551 | 症状:大便粘液
+Rank  3 | Prob: 0.3389 | 症状:血便
+Rank  4 | Prob: 0.0722 | 症状:大便黏液
+Rank  5 | Prob: 0.0541 | 症状:稀便
+Rank  6 | Prob: 0.0226 | 症状:蛋花汤样便
+Rank  7 | Prob: 0.0169 | 症状:退热
+Rank  8 | Prob: 0.0148 | 症状:咳痰
+Rank  9 | Prob: 0.0145 | 症状:痰
+Rank 10 | Prob: 0.0144 | 症状:咳嗽
+
+------------------------------------------------------------
+[Summary: Final Predicted Labels (Threshold > 0.5)]
+ - 症状:大便粘液
+ - 症状:呕吐
+============================================================
+
+
+| [Pipeline] Processing Dialogue Inputs...
+
+============================================================
+| Final Context for EMR Model:
+============================================================
+患者:心脏的血管堵塞有什么最新治疗方法吗
+医生:您好,要看在什么部位,一般可以下支架解决堵塞问题!CT未看到堵塞,有肌桥,若症状较重考虑搭桥手术!
+============================================================
+
+| [EMR] Running entity extraction...
 
 [Top-10 Probabilities]
 Rank  1 | Prob: 1.0000 | 手术:支架
@@ -121,16 +160,20 @@ Rank 10 | Prob: 0.0263 | 手术:介入
  - 手术:支架
 ============================================================
 
-raw_dialogue = [
-    "医生:在看化验单",
-    "医生:就这个大便结果来看,是病毒合并细菌感染,这两个药可以继续吃,孩子大便还是不见好吗?",
-    "患者:是的",
-    "患者:还要给他添点别的药吗?昨天好一点,今天又开始了",
-    "医生:大便是什么样子?能拍个图片吗?"]
+
+| [Pipeline] Processing Dialogue Inputs...
 
 ============================================================
-| Inference Results
+| Final Context for EMR Model:
 ============================================================
+医生:在看化验单
+医生:就这个大便结果来看,是病毒合并细菌感染,这两个药可以继续吃,孩子大便还是不见好吗?
+患者:是的
+患者:还要给他添点别的药吗?昨天好一点,今天又开始了
+医生:大便是什么样子?能拍个图片吗?
+============================================================
+
+| [EMR] Running entity extraction...
 
 [Top-10 Probabilities]
 Rank  1 | Prob: 0.9270 | 症状:细菌感染
@@ -150,17 +193,20 @@ Rank 10 | Prob: 0.0144 | 症状:细菌性感冒
  - 症状:病毒感染
 ============================================================
 
-raw_dialogue = [
-      "医生:你好,有具体彩超单子吗?",
-      "患者:有,刚满月拍的彩超。现在孩子三个月了",
-      "医生:拍一个完整的",
-      "患者:",
-      "医生:孩子现在有什么症状吗?"
-    ]
-    
+
+| [Pipeline] Processing Dialogue Inputs...
+
 ============================================================
-| Inference Results
+| Final Context for EMR Model:
 ============================================================
+医生:你好,有具体彩超单子吗?
+患者:有,刚满月拍的彩超。现在孩子三个月了
+医生:拍一个完整的
+患者:
+医生:孩子现在有什么症状吗?
+============================================================
+
+| [EMR] Running entity extraction...
 
 [Top-10 Probabilities]
 Rank  1 | Prob: 1.0000 | 检查:彩超

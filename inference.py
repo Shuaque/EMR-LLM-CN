@@ -8,64 +8,47 @@ import ast
 import numpy as np
 from fairseq import checkpoint_utils, tasks, utils
 
-# ==============================================================================
-#  CASE SELECTION (请在此处取消注释您要测试的 Case)
-# ==============================================================================
-
-# --- CASE 1: 纯文本 ---
-# modalities = ["text_only"]
-# raw_dialogue_input = [
-#     "患者:没有呕吐,就是吐了点奶,",
-#     "医生:宝宝今天吐奶几次",
-#     "患者:一次",
-#     "医生:血丝多吗",
-#     "医生:呕吐物中有粘液吗?"
-# ]
-
-modalities = ["video", "audio"]
-"""
-    ground truth for AVSR:
-
-    mie_dia_1_win_0	pat	体检检查出窦性心动过速
-    mie_dia_1_win_1	doc	你好当时做心电图时紧张吗正常人可以出现窦性心动过速
-    mie_dia_1_win_2	pat	没有啊以前查出过三尖瓣少量逆流
-    mie_dia_1_win_3	doc	三尖瓣少量返流正常人也可以出现平时心率多少
-
-    ground truth for labels:
-
-    "labels": [
-      "检查:体检",
-      "检查:心电图",
-      "症状:心律不齐"
-    ]
-"""
-
-import torch
-import json
-import os
-import argparse
-import sys
-import re
-import ast
-import numpy as np
-from fairseq import checkpoint_utils, tasks, utils
-"""
-# ==============================================================================
 #  CASE SELECTION (Uncomment the case you want to test)
-# ==============================================================================
---- CASE 1: Text Only ---
 
+# --- CASE 1: Text Only ---
+"""
 modalities = ["text_only"]
-raw_dialogue_input = [
-    "患者:没有呕吐,就是吐了点奶,",
-    "医生:宝宝今天吐奶几次",
-    "患者:一次",
-    "医生:血丝多吗",
-    "医生:呕吐物中有粘液吗?"
+
+raw_dialogue_inputs = [
+
+    [
+        "患者:没有呕吐,就是吐了点奶,",
+        "医生:宝宝今天吐奶几次",
+        "患者:一次",
+        "医生:血丝多吗",
+        "医生:呕吐物中有粘液吗?"
+        ],
+
+    [
+        "患者:心脏的血管堵塞有什么最新治疗方法吗",
+        "医生:您好,要看在什么部位,一般可以下支架解决堵塞问题!CT未看到堵塞,有肌桥,若症状较重考虑搭桥手术!"
+        ],
+
+    [
+        "医生:在看化验单",
+        "医生:就这个大便结果来看,是病毒合并细菌感染,这两个药可以继续吃,孩子大便还是不见好吗?",
+        "患者:是的",
+        "患者:还要给他添点别的药吗?昨天好一点,今天又开始了",
+        "医生:大便是什么样子?能拍个图片吗?"
+        ],
+
+    [
+        "医生:你好,有具体彩超单子吗?",
+        "患者:有,刚满月拍的彩超。现在孩子三个月了",
+        "医生:拍一个完整的",
+        "患者:",
+        "医生:孩子现在有什么症状吗?"
+        ],
 ]
+"""
 
---- CASE 2: Audio/Video Input ---
-
+# --- CASE 2: Audio/Video Input ---
+"""
     ground truth for AVSR:
 
     mie_dia_1_win_0	pat	体检检查出窦性心动过速
@@ -83,6 +66,7 @@ raw_dialogue_input = [
 """
 
 modalities = ["video", "audio"]
+
 raw_dialogue_input = [
     "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_0.wav",
     "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_1_win_1.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_1.wav",
@@ -150,7 +134,6 @@ class AVSRPredictor:
              return self.task.process_raw_input(file_path)
         
         raise NotImplementedError("src_avsr Task must implement `process_raw_input` or a similar interface.")
-
 
 class EMRPredictor:
     """Wrapper to load the EMR model (src) and run entity extraction."""
@@ -266,9 +249,8 @@ def main():
     parser.add_argument('--device', type=str, default='cuda:0')
     args = parser.parse_args()
 
-    # ---------------------------------------------------------
-    # 1. Initialize AVSR Model (If needed)
-    # ---------------------------------------------------------
+
+    # 1. Initialize AVSR Model
     avsr_model = None
     if "text_only" not in modalities:
         if not args.avsr_checkpoint:
@@ -295,21 +277,7 @@ def main():
             print("| Ensure src_avsr is in PYTHONPATH and implements Fairseq interfaces.")
             sys.exit(1)
 
-    # ---------------------------------------------------------
-    # 2. Process Input (Transcribe -> Text)
-    # ---------------------------------------------------------
-    final_text_dialogue = parse_and_process_dialogue(raw_dialogue_input, avsr_model)
-
-    print("\n" + "="*60)
-    print("| Final Context for EMR Model:")
-    print("="*60)
-    for line in final_text_dialogue:
-        print(line)
-    print("="*60 + "\n")
-
-    # ---------------------------------------------------------
-    # 3. Initialize EMR Model
-    # ---------------------------------------------------------
+    # 2. Initialize EMR Model
     emr_model = EMRPredictor(
         checkpoint_path=args.emr_checkpoint,
         user_dir=args.emr_user_dir,
@@ -317,36 +285,44 @@ def main():
         device=args.device
     )
 
-    # ---------------------------------------------------------
-    # 4. Run EMR Prediction
-    # ---------------------------------------------------------
-    print("| [EMR] Running entity extraction...")
-    probs = emr_model.predict(final_text_dialogue)
-    
-    # ---------------------------------------------------------
-    # 5. Output Results
-    # ---------------------------------------------------------
-    # Top-10
-    topk_vals, topk_inds = torch.topk(probs, k=10)
-    print("\n[Top-10 Probabilities]")
-    for rank, (score, idx) in enumerate(zip(topk_vals, topk_inds)):
-        idx = idx.item()
-        label_name = emr_model.id2label.get(idx, f"Unknown_ID_{idx}")
-        print(f"Rank {rank+1:2d} | Prob: {score:.4f} | {label_name}")
+    # 3. Process Input (Transcribe -> Text)
+    for input in raw_dialogue_inputs:
+        final_text_dialogue = parse_and_process_dialogue(input, avsr_model)
 
-    # Final Summary
-    threshold = 0.5
-    final_indices = torch.where(probs > threshold)[0]
-    final_labels = [emr_model.id2label.get(idx.item(), str(idx.item())) for idx in final_indices]
-    
-    print("\n" + "-"*60)
-    print("[Summary: Final Predicted Labels (Threshold > 0.5)]")
-    if not final_labels:
-        print("No labels detected.")
-    else:
-        for lbl in final_labels:
-            print(f" - {lbl}")
-    print("="*60 + "\n")
+        print("\n" + "="*60)
+        print("| Final Context for EMR Model:")
+        print("="*60)
+        for line in final_text_dialogue:
+            print(line)
+        print("="*60 + "\n")
+
+
+        # 4. Run EMR Prediction
+        print("| [EMR] Running entity extraction...")
+        probs = emr_model.predict(final_text_dialogue)
+        
+        # 5. Output Results
+        # Top-10
+        topk_vals, topk_inds = torch.topk(probs, k=10)
+        print("\n[Top-10 Probabilities]")
+        for rank, (score, idx) in enumerate(zip(topk_vals, topk_inds)):
+            idx = idx.item()
+            label_name = emr_model.id2label.get(idx, f"Unknown_ID_{idx}")
+            print(f"Rank {rank+1:2d} | Prob: {score:.4f} | {label_name}")
+
+        # Final Summary
+        threshold = 0.5
+        final_indices = torch.where(probs > threshold)[0]
+        final_labels = [emr_model.id2label.get(idx.item(), str(idx.item())) for idx in final_indices]
+        
+        print("\n" + "-"*60)
+        print("[Summary: Final Predicted Labels (Threshold > 0.5)]")
+        if not final_labels:
+            print("No labels detected.")
+        else:
+            for lbl in final_labels:
+                print(f" - {lbl}")
+        print("="*60 + "\n")
 
 if __name__ == "__main__":
     main()
