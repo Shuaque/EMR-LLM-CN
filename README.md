@@ -69,9 +69,9 @@ cd ..
 
 | File Name              | Source URL                                                                              | File Size  |
 |------------------------|-----------------------------------------------------------------------------------------|------------|
-| CMDD-MIE-EMR-AV        |[GoogleDrive](https://drive.google.com/drive/folders/1XjJ0T5kQ-ntyWc_2M1EHZJxpba1c9FId?usp=sharing) or [BaiduDrive](https://pan.baidu.com/s/1FI7JZw8aSFEoO13X405SBg)(key: cize) |     18GB   |
-| emr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive]()(key: ) |     8.3GB   |
-| avsr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive]()(key: ) |     14.3GB   |
+| CMDD-MIE-EMR-AV        |[GoogleDrive](https://drive.google.com/drive/folders/1XjJ0T5kQ-ntyWc_2M1EHZJxpba1c9FId?usp=sharing) or [BaiduDrive](https://pan.baidu.com/s/1FI7JZw8aSFEoO13X405SBg)(key: cize) |     18 GB   |
+| emr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive]()(key: ) |     8.3 GB   |
+| avsr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive]()(key: ) |     13.4 GB   |
 
 
 Some results are slightly better than in the paper due to hyper-parameter optimisation. The av-asr code and checkpoint can be found on the released version.

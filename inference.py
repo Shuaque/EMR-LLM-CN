@@ -50,18 +50,18 @@ text_dialogues = [
 # GROUP 2: Multimedia Batch (Requires AVSR Transcription)
 # Define specific files with "modality": "audio", "video", or "audio_video"
 # ------------------------------------------------------------------------------
-multimedia_dialogues = [
-    {
-        "modality": "audio_video",
-        "dialogue": [
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_0.wav",
-            # Multiple files supported (comma separated)
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_1_win_1.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_1.wav",
-            "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_2.wav",
-            "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_1_win_3.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_3.wav",
-        ]
-    }
-]
+# multimedia_dialogues = [
+#     {
+#         "modality": "audio_video",
+#         "dialogue": [
+#             "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_0.wav",
+#             # Multiple files supported (comma separated)
+#             "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_1_win_1.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_1.wav",
+#             "患者:/workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_2.wav",
+#             "医生:/workspace/shuaque/EMR-LLM-CN/data/examples/video96/mie_dia_1_win_3.mp4, /workspace/shuaque/EMR-LLM-CN/data/examples/audio16k/mie_dia_1_win_3.wav",
+#         ]
+#     }
+# ]
 
 # ------------------------------------------------------------------------------
 # COMBINE INPUTS
@@ -76,7 +76,7 @@ for d in text_dialogues:
     })
 
 # 2. Add Multimedia Batch
-raw_dialogue_inputs.extend(multimedia_dialogues)
+# raw_dialogue_inputs.extend(multimedia_dialogues)
 
 
 # ==============================================================================
@@ -304,7 +304,7 @@ def main():
         modality = item.get("modality", "text")
         lines = item.get("dialogue", [])
         
-        print("\n" + "#"*60)
+        print("\n" + "-"*60)
         print(f"| Processing Dialogue {i+1}/{len(raw_dialogue_inputs)} | Mode: {modality.upper()}")
         print("#"*60)
 
