@@ -306,7 +306,7 @@ def main():
         
         print("\n" + "-"*60)
         print(f"| Processing Dialogue {i+1}/{len(raw_dialogue_inputs)} | Mode: {modality.upper()}")
-        print("#"*60)
+        print("-"*60)
 
         # Step A: Convert to Text (if needed)
         final_text_dialogue = process_dialogue_lines(lines, modality, avsr_model)
