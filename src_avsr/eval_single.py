@@ -100,7 +100,8 @@ class VideoPreprocessor:
                 # Pick the largest face
                 max_id = np.argmax([(b[2]-b[0]) + (b[3]-b[1]) for b in detected_faces])
                 # Detect landmarks
-                face_points, _ = self.landmark_detector(frame, [detected_faces[max_id]], rgb=True)
+                # FIX: Convert list to numpy array
+                face_points, _ = self.landmark_detector(frame, np.array([detected_faces[max_id]]), rgb=True)
                 landmarks.append(face_points[0])
         return landmarks
 

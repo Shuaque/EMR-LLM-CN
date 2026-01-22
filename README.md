@@ -30,7 +30,7 @@ pip install omegaconf==2.0.6 hydra-core==1.0.7 #(If your pip version > 24.1, ple
 pip install transformers==4.47.1 peft==0.14.0
 pip install bitsandbytes --prefer-binary
 pip install tensorboardX av matplotlib scikit-image
-
+pip install librosa soundfile
 ```
 - Install `retinaface` at `../../EMR-LLM-CN/data/preparation/detectors/retinaface` tracker,you can put another detector in `../detectors`:
 ```bash
@@ -82,37 +82,54 @@ Run the script `../../EMR-LLM-CN/inference.py` to perform **single-sample evalua
 ```bash
 # run this scipts:  bash /../../EMR-LLM-CN/scripts/inference.sh
 
-export ROOT=../../EMR-LLM-CN
-export TOKENIZERS_PARALLELISM=false
-export SRC_PTH="$ROOT/src"
-export PYTHONPATH=$ROOT:$ROOT/fairseq:$SRC_PTH
+export ROOT="/../../EMR-LLM-CN"
+export SRC_EMR="$ROOT/src"
+export SRC_AVSR="$ROOT/src_avsr"
 
-CHECKPOINT=/workspace/shuaque/Classification_Semantic_att_LLM/exp/202512/run/28190745_A800_Optimized_Exp1_3_B_3_loss/checkpoints/checkpoint_best.pt
+# Ensure Python can find Fairseq and both source directories
+export PYTHONPATH="$ROOT:$ROOT/fairseq:$SRC_EMR:$SRC_AVSR:$PYTHONPATH"
 
-CUDA_VISIBLE_DEVICES=0 python $ROOT/inference.py \
-    --common-user-dir /workspace/shuaque/EMR-LLM-CN/src \
-    --checkpoint-path $CHECKPOINT \
-    --ontology-path /workspace/shuaque/EMR-LLM-CN/data/ontology.json \
-    --device cuda:0
+# --- EMR Model (Entity Extraction) ---
+EMR_CHECKPOINT="$ROOT/pretrained/emr_checkpoint_best.pt"
+ONTOLOGY="$ROOT/data/ontology.json"
+
+# --- AVSR Model (Audio/Video Transcription) ---
+AVSR_CHECKPOINT="$ROOT/pretrained/avsr_checkpoint_best.pt"
+AVSR_DATA_DIR="/../../CMDD-MIE-EMR-AV" 
+
+# --- AVSR Auxiliary Files (Optional but Recommended) ---
+# If your model uses CTC or specific pre-trained encoders, define them here.
+# If not needed, you can leave them empty or comment them out.
+CTC_VOCAB="$ROOT/data/global_ctc_vocab_3bi.pt"
+AVHUBERT_PATH="$ROOT/pretrained/Avhubert/base_vox_iter5.pt"
+WHISPER_PATH="$ROOT/pretrained/Whisper/whisper-large"
+
+CUDA_VISIBLE_DEVICES=0 python -B $ROOT/inference.py \
+    --device "cuda:0" \
+    --emr-checkpoint "$EMR_CHECKPOINT" \
+    --emr-user-dir "$SRC_EMR" \
+    --ontology-path "$ONTOLOGY" \
+    --avsr-checkpoint "$AVSR_CHECKPOINT" \
+    --avsr-user-dir "$SRC_AVSR" \
+    --avsr-data-dir "$AVSR_DATA_DIR" \
+    --avsr-ctc-vocab "$CTC_VOCAB" \
+    --avsr-w2v-path "$AVHUBERT_PATH" \
+    --avsr-whisper-path "$WHISPER_PATH"
 ```
 
 Example results can be found in `../../EMR-LLM-CN/inference.log`.
 ```bash
-| [Batch Start] Processing 4 dialogues...
 
-------------------------------------------------------------
-| Processing Dialogue 1/4 | Mode: TEXT
-------------------------------------------------------------
+| [Batch Start] Processing 7 dialogues...
 
-----------------------------------------
+# Processing Dialogue 1/7 | Mode: TEXT #
+
 | [Context] EMR Input:
 |  患者:没有呕吐,就是吐了点奶,
 |  医生:宝宝今天吐奶几次
 |  患者:一次
 |  医生:血丝多吗
 |  医生:呕吐物中有粘液吗?
-----------------------------------------
-| [EMR] Extracting entities...
 
 [Top-10 Probabilities]
 Rank  1 | Prob: 0.9934 | 症状:呕吐
@@ -126,20 +143,13 @@ Rank  8 | Prob: 0.0148 | 症状:咳痰
 Rank  9 | Prob: 0.0145 | 症状:痰
 Rank 10 | Prob: 0.0144 | 症状:咳嗽
 
-[Summary: Final Labels]
- - 症状:大便粘液
- - 症状:呕吐
+[Summary: Final Labels] ['症状:大便粘液', '症状:呕吐']
 
-------------------------------------------------------------
-| Processing Dialogue 2/4 | Mode: TEXT
-------------------------------------------------------------
+# Processing Dialogue 2/7 | Mode: TEXT #
 
-----------------------------------------
 | [Context] EMR Input:
 |  患者:心脏的血管堵塞有什么最新治疗方法吗
 |  医生:您好,要看在什么部位,一般可以下支架解决堵塞问题!CT未看到堵塞,有肌桥,若症状较重考虑搭桥手术!
-----------------------------------------
-| [EMR] Extracting entities...
 
 [Top-10 Probabilities]
 Rank  1 | Prob: 1.0000 | 手术:支架
@@ -153,25 +163,16 @@ Rank  8 | Prob: 0.0535 | 症状:高血压
 Rank  9 | Prob: 0.0409 | 症状:呼吸困难
 Rank 10 | Prob: 0.0263 | 手术:介入
 
-[Summary: Final Labels]
- - 症状:心肌梗死
- - 症状:冠心病
- - 手术:搭桥
- - 手术:支架
+[Summary: Final Labels] ['症状:心肌梗死', '症状:冠心病', '手术:搭桥', '手术:支架']
 
-------------------------------------------------------------
-| Processing Dialogue 3/4 | Mode: TEXT
-------------------------------------------------------------
+# Processing Dialogue 3/7 | Mode: TEXT #
 
-----------------------------------------
 | [Context] EMR Input:
 |  医生:在看化验单
 |  医生:就这个大便结果来看,是病毒合并细菌感染,这两个药可以继续吃,孩子大便还是不见好吗?
 |  患者:是的
 |  患者:还要给他添点别的药吗?昨天好一点,今天又开始了
 |  医生:大便是什么样子?能拍个图片吗?
-----------------------------------------
-| [EMR] Extracting entities...
 
 [Top-10 Probabilities]
 Rank  1 | Prob: 0.9270 | 症状:细菌感染
@@ -185,42 +186,136 @@ Rank  8 | Prob: 0.0152 | 症状:细菌性肠炎
 Rank  9 | Prob: 0.0146 | 症状:大便粘液
 Rank 10 | Prob: 0.0144 | 症状:细菌性感冒
 
-[Summary: Final Labels]
- - 症状:细菌感染
- - 症状:病毒感染
+[Summary: Final Labels] ['症状:细菌感染', '症状:病毒感染']
 
-------------------------------------------------------------
-| Processing Dialogue 4/4 | Mode: TEXT
-------------------------------------------------------------
+# Processing Dialogue 4/7 | Mode: TEXT #
 
-----------------------------------------
 | [Context] EMR Input:
 |  医生:你好,有具体彩超单子吗?
 |  患者:有,刚满月拍的彩超。现在孩子三个月了
 |  医生:拍一个完整的
-|  患者:
 |  医生:孩子现在有什么症状吗?
-----------------------------------------
-| [EMR] Extracting entities...
 
 [Top-10 Probabilities]
 Rank  1 | Prob: 1.0000 | 检查:彩超
-Rank  2 | Prob: 0.0486 | 检查:b超
-Rank  3 | Prob: 0.0264 | 检查:超声
-Rank  4 | Prob: 0.0239 | 检查:体检
-Rank  5 | Prob: 0.0111 | 症状:先天性心脏病
-Rank  6 | Prob: 0.0102 | 检查:血常规
-Rank  7 | Prob: 0.0098 | 症状:心律不齐
-Rank  8 | Prob: 0.0090 | 症状:甲亢
-Rank  9 | Prob: 0.0065 | 检查:心肌酶
-Rank 10 | Prob: 0.0052 | 症状:发绀
+Rank  2 | Prob: 0.0461 | 检查:b超
+Rank  3 | Prob: 0.0281 | 检查:超声
+Rank  4 | Prob: 0.0247 | 检查:体检
+Rank  5 | Prob: 0.0108 | 检查:血常规
+Rank  6 | Prob: 0.0088 | 症状:先天性心脏病
+Rank  7 | Prob: 0.0082 | 症状:心律不齐
+Rank  8 | Prob: 0.0073 | 症状:甲亢
+Rank  9 | Prob: 0.0067 | 检查:心肌酶
+Rank 10 | Prob: 0.0055 | 检查:ct
 
-[Summary: Final Labels]
- - 检查:彩超
+[Summary: Final Labels] ['检查:彩超']
 
+# Processing Dialogue 5/7 | Mode: AUDIO_VIDEO #
+| [Pipeline] Modality is AUDIO_VIDEO.
+|  > Transcribing pair: [A: mie_dia_1_win_0.wav]
+The following generation flags are not valid and may be ignored: ['temperature', 'top_p', 'top_k']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+|  > Result: 患者:皮检检查出窦性心动过速
+|  > Transcribing pair: [V: mie_dia_1_win_1.mp4] [A: mie_dia_1_win_1.wav]
+| [Info] Video mie_dia_1_win_1.mp4 is already 96x96. Skipping detection.
+|  > Result: 医生:你好当时做心电图时紧张吗正常人可以出现窦性心动过速
+|  > Transcribing pair: [A: mie_dia_1_win_2.wav]
+|  > Result: 患者:没有啊以前查出过三尖瓣少量漏流
+|  > Transcribing pair: [V: mie_dia_1_win_3.mp4] [A: mie_dia_1_win_3.wav]
+| [Info] Video mie_dia_1_win_3.mp4 is already 96x96. Skipping detection.
+|  > Result: 医生:三尖瓣少量返流正常人也可以出现平时心率多少
+
+| [Context] EMR Input:
+|  患者:皮检检查出窦性心动过速
+|  医生:你好当时做心电图时紧张吗正常人可以出现窦性心动过速
+|  患者:没有啊以前查出过三尖瓣少量漏流
+|  医生:三尖瓣少量返流正常人也可以出现平时心率多少
+
+[Top-10 Probabilities]
+Rank  1 | Prob: 1.0000 | 症状:心律不齐
+Rank  2 | Prob: 0.9991 | 检查:心电图
+Rank  3 | Prob: 0.0479 | 检查:体检
+Rank  4 | Prob: 0.0317 | 检查:血常规
+Rank  5 | Prob: 0.0303 | 检查:超声
+Rank  6 | Prob: 0.0161 | 检查:甲状腺功能
+Rank  7 | Prob: 0.0160 | 检查:ct
+Rank  8 | Prob: 0.0122 | 检查:测血压
+Rank  9 | Prob: 0.0074 | 检查:彩超
+Rank 10 | Prob: 0.0054 | 检查:cta
+
+[Summary: Final Labels] ['症状:心律不齐', '检查:心电图']
+
+# Processing Dialogue 6/7 | Mode: AUDIO_VIDEO #
+| [Pipeline] Modality is AUDIO_VIDEO.
+|  > Transcribing pair: [V: mie_dia_6_win_2.mp4] [A: mie_dia_6_win_2.wav]
+| [Info] Video mie_dia_6_win_2.mp4 is already 96x96. Skipping detection.
+|  > Result: 患者:我感冒有一零天了之前吃些西药个心好慌第二天个人好累现在感觉好些了但好像有时会有喘气不顺的感觉昨天做过心电图检查说正常我这种情况有可能心肌炎吗
+|  > Transcribing pair: [V: mie_dia_6_win_3.mp4] [A: mie_dia_6_win_3.wav]
+| [Info] Video mie_dia_6_win_3.mp4 is already 96x96. Skipping detection.
+|  > Result: 医生:不好说心悸没有多少
+|  > Transcribing pair: [A: mie_dia_6_win_4.wav]
+|  > Result: 患者:那要去做过心肌酶检查吗那医生没叫做心血酶酶检查哦只叫做心电图
+|  > Transcribing pair: [V: mie_dia_6_win_5.mp4] [A: mie_dia_6_win_5.wav]
+| [Info] Video mie_dia_6_win_5.mp4 is already 96x96. Skipping detection.
+|  > Result: 医生:如果有可疑心肌炎的表现检查是必须要做的
+|  > Transcribing pair: [V: mie_dia_6_win_6.mp4] [A: mie_dia_6_win_6.wav]
+| [Info] Video mie_dia_6_win_6.mp4 is already 96x96. Skipping detection.
+|  > Result: 患者:我看医生那医生没说我是上春雨医生咨询说怀疑心肌炎
+
+| [Context] EMR Input:
+|  患者:我感冒有一零天了之前吃些西药个心好慌第二天个人好累现在感觉好些了但好像有时会有喘气不顺的感觉昨天做过心电图检查说正常我这种情况有可能心肌炎吗
+|  医生:不好说心悸没有多少
+|  患者:那要去做过心肌酶检查吗那医生没叫做心血酶酶检查哦只叫做心电图
+|  医生:如果有可疑心肌炎的表现检查是必须要做的
+|  患者:我看医生那医生没说我是上春雨医生咨询说怀疑心肌炎
+
+[Top-10 Probabilities]
+Rank  1 | Prob: 1.0000 | 症状:心慌
+Rank  2 | Prob: 1.0000 | 症状:心肌炎
+Rank  3 | Prob: 0.9995 | 检查:心电图
+Rank  4 | Prob: 0.9747 | 检查:心肌酶
+Rank  5 | Prob: 0.9503 | 症状:呼吸困难
+Rank  6 | Prob: 0.9436 | 症状:感冒
+Rank  7 | Prob: 0.8458 | 症状:乏力
+Rank  8 | Prob: 0.1393 | 一般信息:精神状态
+Rank  9 | Prob: 0.0244 | 一般信息:饮食
+Rank 10 | Prob: 0.0197 | 检查:血常规
+
+[Summary: Final Labels] ['症状:呼吸困难', '症状:心肌炎', '症状:乏力', '症状:心慌', '症状:感冒', '检查:心电图', '检查:心肌酶']
+
+# Processing Dialogue 7/7 | Mode: AUDIO_VIDEO #
+| [Pipeline] Modality is AUDIO_VIDEO.
+|  > Transcribing pair: [V: mie_dia_11_win_4.mp4] [A: mie_dia_11_win_4.wav]
+| [Info] Video mie_dia_11_win_4.mp4 is already 96x96. Skipping detection.
+|  > Result: 患者:希炎会又发病不哦哦肌炎酒我知道了谢谢医生
+|  > Transcribing pair: [V: mie_dia_11_win_5.mp4] [A: mie_dia_11_win_5.wav]
+| [Info] Video mie_dia_11_win_5.mp4 is already 96x96. Skipping detection.
+|  > Result: 医生:当然会而且会加重血管硬化嗯不客气
+|  > Transcribing pair: [A: mie_dia_11_win_6.wav]
+|  > Result: 患者:额额好可怕但是这种病能不能治好啊
+|  > Transcribing pair: [V: mie_dia_11_win_7.mp4] [A: mie_dia_11_win_7.wav]
+| [Info] Video mie_dia_11_win_7.mp4 is already 96x96. Skipping detection.
+|  > Result: 医生:如果是血管狭窄造影达到狭窄百分之七五就需要支架治疗
+
+| [Context] EMR Input:
+|  患者:希炎会又发病不哦哦肌炎酒我知道了谢谢医生
+|  医生:当然会而且会加重血管硬化嗯不客气
+|  患者:额额好可怕但是这种病能不能治好啊
+|  医生:如果是血管狭窄造影达到狭窄百分之七五就需要支架治疗
+
+[Top-10 Probabilities]
+Rank  1 | Prob: 1.0000 | 手术:支架
+Rank  2 | Prob: 0.9989 | 检查:造影
+Rank  3 | Prob: 0.0263 | 检查:cta
+Rank  4 | Prob: 0.0170 | 检查:心电图
+Rank  5 | Prob: 0.0130 | 检查:彩超
+Rank  6 | Prob: 0.0093 | 检查:平板
+Rank  7 | Prob: 0.0092 | 症状:冠心病
+Rank  8 | Prob: 0.0081 | 检查:超声
+Rank  9 | Prob: 0.0068 | 手术:搭桥
+Rank 10 | Prob: 0.0060 | 检查:ct
+
+[Summary: Final Labels] ['检查:造影', '手术:支架']
 ```
-
-
 
 ## Batch evaluation on EMR data
 Ensure that `test.json` is stored in `../data`, and that `$CHECKPOINT` has been downloaded and placed in the `../../EMR-LLM-CN/pretrained` directory. The `--ratios` option can be set within `[0.1–1.0]` to reduce the number of candidate labels and thereby shorten the evaluation time. The evaluation results are saved in `../../EMR-LLM-CN/results/`.The script at `../../EMR-LLM-CN/scritps/eval_emr.sh`. Also, view example results in `../../EMR-LLM-CN/results/emr_eval_sweep.log`.
