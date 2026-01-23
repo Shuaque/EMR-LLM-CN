@@ -71,11 +71,11 @@ cd ..
 4. 从 HuggingFace 或 ModelScope 平台下载 `whisper`，并放置到 `../../EMR-LLM-CN/pretrained/Whisper/whisper-large`
 5. 从 HuggingFace 或 ModelScope 平台下载 `Qwen2.5-3B-Instruct`，并放置到 `../../EMR-LLM-CN/pretrained/LLM/Qwen2.5-3B-Instruct`
 
-| File Name               | Source URL                                                                                                                                                                      | File Size |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| CMDD-MIE-EMR-AV         | [GoogleDrive](https://drive.google.com/drive/folders/1XjJ0T5kQ-ntyWc_2M1EHZJxpba1c9FId?usp=sharing) or [BaiduDrive](https://pan.baidu.com/s/1FI7JZw8aSFEoO13X405SBg)(key: cize) | 18 GB      |
-| emr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive](https://pan.baidu.com/s/1e73jX1mKYtrVxzDGMEJsXA)(key: pxf1) |     8.3 GB   |
-| avsr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive](https://pan.baidu.com/s/1e73jX1mKYtrVxzDGMEJsXA)(key: pxf1) |     13.4 GB   |                                                                                                                                     | 13.4 GB    |
+| File Name              | Source URL                                                                              | File Size  |
+|------------------------|-----------------------------------------------------------------------------------------|------------|
+| CMDD-MIE-EMR-AV        |[GoogleDrive](https://drive.google.com/drive/folders/1XjJ0T5kQ-ntyWc_2M1EHZJxpba1c9FId?usp=sharing) or [BaiduDrive](https://pan.baidu.com/s/1GUU0E8uzSxWAB_xoI54UTA)(key: st64) |     18 GB   |
+| emr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive](https://pan.baidu.com/s/13o2n3Pq9IxFSHLba0zD7QQ)(key: bqzb)  |     8.3 GB   |
+| avsr_checkpoint_best.pt        |[GoogleDrive]() or [BaiduDrive](https://pan.baidu.com/s/13o2n3Pq9IxFSHLba0zD7QQ)(key: bqzb) |     13.4 GB   |
 
 由于超参数优化，部分结果略优于论文中的结果。AV-ASR 相关代码与 checkpoint 可在发布版本中获取。
 
